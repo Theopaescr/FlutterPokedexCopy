@@ -18,6 +18,7 @@ abstract class _PokeApiStoreBase with Store {
 
   @action
   fetchPokemonList() {
+    _pokeApi = null;
     loadPokeApi().then((pokeList) {
       _pokeApi = pokeList;
     });
