@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
 import 'package:pokedex/consts/consts_api.dart';
 import 'package:pokedex/models/pokeapi.dart';
@@ -18,10 +21,25 @@ abstract class _PokeApiStoreBase with Store {
 
   @action
   fetchPokemonList() {
-    _pokeApi = null;
+      _pokeApi = null;
     loadPokeApi().then((pokeList) {
       _pokeApi = pokeList;
     });
+  }
+
+  @action
+  getPokemon({int index}){
+    return _pokeApi.pokemon[index];
+  }
+
+  @action
+  Widget getImage({String numero}) {
+    return CachedNetworkImage(
+      placeholder: (context, url) => new Container(
+        color: Colors.transparent,
+      ),
+      imageUrl: 'https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/images/$numero.png',
+    );
   }
 
   Future<PokeApi> loadPokeApi() async {
@@ -29,8 +47,8 @@ abstract class _PokeApiStoreBase with Store {
       final response = await http.get(ConstsApi.baseUrl);
       var decodeJson = jsonDecode(response.body);
       return PokeApi.fromJson(decodeJson);
-    } catch (error) {
-      print("Erro ao carregar lista");
+    } catch (error, stacktrace) {
+      print("Erro ao carregar lista -> " + stacktrace.toString());
       return null;
     }
   }

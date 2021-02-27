@@ -2,14 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:pokedex/consts/consts_app.dart';
 import 'package:pokedex/models/pokeapi.dart';
 import 'package:pokedex/pages/home_page/stores/pokeapi_store.dart';
+import 'package:pokedex/pages/home_page/widgets/poke_item.dart';
 
 import 'app_bar_home.dart';
 
 class HomePage extends StatefulWidget {
-
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -23,6 +24,7 @@ class _HomePageState extends State<HomePage> {
     pokeApiStore = PokeApiStore();
     pokeApiStore.fetchPokemonList();
   }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -55,17 +57,53 @@ class _HomePageState extends State<HomePage> {
                     child: Observer(
                       name: 'ListHomePage',
                       builder: (BuildContext context) {
-                        PokeApi _pokeApi = pokeApiStore.pokeApi;
-                        return (_pokeApi != null)
-                            ? ListView.builder(
-                                itemCount: _pokeApi.pokemon.length,
-                                itemBuilder: (context, index) {
-                                  return ListTile(
-                                    title: Text(_pokeApi.pokemon[index].name),
-                                  );
-                                },
+                        return (pokeApiStore.pokeApi != null)
+                            ? AnimationLimiter(
+                                child: GridView.builder(
+                                  physics: BouncingScrollPhysics(),
+                                  padding: EdgeInsets.all(12),
+                                  addAutomaticKeepAlives: false,
+                                  gridDelegate:
+                                      new SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2),
+                                  itemCount:
+                                      pokeApiStore.pokeApi.pokemon.length,
+                                  itemBuilder: (context, index) {
+                                    Pokemon pokemon =
+                                        pokeApiStore.getPokemon(index: index);
+                                    return AnimationConfiguration.staggeredGrid(
+                                      position: index,
+                                      duration:
+                                          const Duration(milliseconds: 375),
+                                      columnCount: 2,
+                                      child: ScaleAnimation(
+                                        child: GestureDetector(
+                                          child: PokeItem(
+                                            index: index,
+                                            types: pokemon.type,
+                                            name: pokemon.name,
+                                            image: pokeApiStore.getImage(
+                                                numero: pokemon.num),
+                                          ),
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      Container() /*PokeDetailPage(index: index)*/,
+                                                  fullscreenDialog: true,
+                                                ));
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               )
-                            : Center(child: CircularProgressIndicator());
+                            : Center(
+                                child: CircularProgressIndicator(),
+                              );
                       },
                     ),
                   ),
