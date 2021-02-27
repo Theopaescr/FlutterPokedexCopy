@@ -82,8 +82,7 @@ class _HomePageState extends State<HomePage> {
                                             index: index,
                                             types: pokemon.type,
                                             name: pokemon.name,
-                                            image: pokeApiStore.getImage(
-                                                numero: pokemon.num),
+                                            num: pokemon.num,
                                           ),
                                           onTap: () {
                                             Navigator.push(
